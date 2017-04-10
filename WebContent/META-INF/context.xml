@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?> 
-<Context path="/ProjectFarm">
-    <Resource auth="Container"
-    driverClassName="org.sqlite.JDBC" maxActive="20"
-    maxIdle="10" maxWait="10000" name="jdbc/ProjectFarm" type="javax.sql.DataSource" url="jdbc:sqlite://localhost/ProjectFarm" username="root"
-    password=""/>
-</Context>

@@ -25,7 +25,7 @@
 	  cursor: pointer;
 	}
     
-	</style>
+</style>
 <jsp:include page="utils/header.jsp">
 	<jsp:param value="Project Farm" name="title"/>
 </jsp:include>
@@ -64,6 +64,7 @@ List<Document> files = ProjectDB.getProject(acronym).getDocuments();
 %>
 
 <div class="container span6 offset3">
+
 	<div class="info-part">
 		<p style="padding:5px;">Project Evaluation:</p>
 			
@@ -103,13 +104,14 @@ List<Document> files = ProjectDB.getProject(acronym).getDocuments();
 				<div class="col-md-4"># of evaluators: <%=evaluators %></div>
 			</div>
 		</div>
-		<span class="col-md-3 text-center">
+		<div class="col-md-6 text-center">
   			<input type="submit" value="Save" class="btn btn-primary" id="submit" name="submit" style="margin:10px;">
-  		</span>
-  		<span class="col-md-3 text-center">
+  		</div>
+  		<div class="col-md-6 text-center">
   			<input type="button" value="Discard" class="btn btn-primary" onclick="discard()" style="margin:10px;">
- 	 	</span>
+ 	 	</div>
 	</form>
+	
 </div>
 
 <script type="text/javascript">

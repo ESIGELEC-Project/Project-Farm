@@ -1,5 +1,9 @@
 package model.db;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -8,12 +12,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import model.Category;
 import model.Document;
@@ -27,13 +26,24 @@ import model.db.exception.DatabaseAccessError;
 public class DBUtil {
 	private static Connection con;
 	private static DateFormat format;
+	private static Properties properties;
 	static{
 		format = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH);
+		properties = new Properties();
+		try {
+			InputStream input = new FileInputStream("resources/dbconfig.properties");
+			properties.load(input);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		initialize();
 	}
 	public static void initialize(){
 		try {
-			Class.forName("org.sqlite.JDBC");
+			Class.forName(properties.getProperty("sql_driver"));
 			String url = "jdbc:sqlite:/Users/Frank/Documents/workspace_JEE/ProjectFarm/src/ProjectFarm.db";//the address should be changed to where the database resides
 			con = DriverManager.getConnection(url);
 			if(con != null){

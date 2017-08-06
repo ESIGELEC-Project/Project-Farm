@@ -1,7 +1,6 @@
 package model;
 
 import java.io.Serializable;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -119,8 +118,6 @@ public class Project implements Serializable {
 	}
 
 	public void addEvaluation(Evaluation eval) {
-		//evaluations.add(eval);
-//		eval.setProject(this);
 		DBUtil.addEvaluation(this.acronym, eval.getEvaluator().getEmail(), eval);
 	}
 
@@ -130,7 +127,6 @@ public class Project implements Serializable {
 	
 	//here will update database
 	public void addDocument(Document doc) {
-		//documents.add(doc);
 		DBUtil.addDocPath(this.acronym, doc);
 	}
 	

@@ -10,6 +10,7 @@ import model.Evaluator;
 import model.Owner;
 import model.Project;
 import model.db.CategoryDB;
+import model.db.DBUtil;
 import model.db.ProjectDB;
 import model.db.UserDB;
 import model.db.exception.DatabaseAccessError;
@@ -269,7 +270,12 @@ public class GeneralTest {
 
 	@Test
 	public void testDatabase(){
-		//assertEquals("success",UserDB.createUser("john@acme.com", "john", 123));
+		Assert.assertEquals("success", UserDB.createUser("john@acme.com", "john", 123));
 		
+	}
+
+	@Test
+	public void testDatabaseConnection(){
+		Assert.assertEquals(true, DBUtil.initialize());
 	}
 }

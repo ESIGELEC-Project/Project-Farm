@@ -1,7 +1,5 @@
 package model.db;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -27,41 +25,50 @@ public class DBUtil {
 	private static Connection con;
 	private static DateFormat format;
 	private static Properties properties;
+
 	static{
 		format = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH);
 		properties = new Properties();
 		try {
-			InputStream input = new FileInputStream("resources/dbconfig.properties");
+			InputStream input = DBUtil.class.getResourceAsStream("/dbconfig.properties");
 			properties.load(input);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 		initialize();
 	}
-	public static void initialize(){
+
+	public static boolean initialize(){
 		try {
-			Class.forName(properties.getProperty("sql_driver"));
-			String url = "jdbc:sqlite:/Users/Frank/Documents/workspace_JEE/ProjectFarm/src/ProjectFarm.db";//the address should be changed to where the database resides
-			con = DriverManager.getConnection(url);
+			Class.forName(properties.getProperty("sql_driver")).newInstance();
+			String db_url = properties.getProperty("db_url");//the address should be changed to where the database resides
+			String dbuser = properties.getProperty("username");
+			String password = properties.getProperty("password");
+			String database = properties.getProperty("database");
+			con = DriverManager.getConnection(db_url, dbuser, password);
 			if(con != null){
                 System.out.println("Connected to the database");
-                DatabaseMetaData dm = (DatabaseMetaData) con.getMetaData();
+                DatabaseMetaData dm = con.getMetaData();
                 System.out.println("Driver name: " + dm.getDriverName());
                 System.out.println("Driver version: " + dm.getDriverVersion());
                 System.out.println("Product name: " + dm.getDatabaseProductName());
                 System.out.println("Product version: " + dm.getDatabaseProductVersion());
                 System.out.println(dm.getURL());
 			}
+			return true;
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (SQLException e){
+			return false;
+		} catch (SQLException e) {
 			e.printStackTrace();
+			return false;
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+			return true;
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+			return false;
 		}
-		
 	}
 	
 	public static Map<String,User> selectUserDB() {
@@ -77,12 +84,45 @@ public class DBUtil {
 					users.put(result.getString(1), new Evaluator(result.getString(1),result.getString(2),result.getString(3)));
 			}
 			st.close();
-			return users;
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			return users;
+		}
+	}
+
+	public static boolean createUser(String username, String name, int password){
+		Statement st;
+		try {
+			if (!checkUserCreatable(username)){
+				return false;
+			}
+			st = con.createStatement();
+			String sql = "insert into user(username,name,password)values('"+username+"','"+name+"','"+password+"')";
+			st.executeUpdate(sql);
+			st.close();
+			con.commit();
+			con.close();
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public static boolean checkUserCreatable(String username){
+		Statement st;
+		try{
+			st = con.createStatement();
+			String sql = "select " + username + " from user";
+			ResultSet result = st.executeQuery(sql);
+			if (!result.wasNull()){
+				return true;
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally {
+			return false;
 		}
 	}
 
@@ -97,7 +137,6 @@ public class DBUtil {
 			}
 			return categories;
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return categories;
 		}
@@ -177,7 +216,7 @@ public class DBUtil {
 		
 	}
 
-	public static void addProject(Project p) throws SQLException{// update evaluation table, document table
+	public static boolean addProject(Project p) throws SQLException{// update evaluation table, document table
 		DatabaseAccessError duplicated_name_error = new DatabaseAccessError("can not add the same acronym with an existing project in database!");
 		try {
 			String acronym = p.getAcronym();
@@ -197,12 +236,13 @@ public class DBUtil {
 						"','"+ owner_email+ "','"+ category_name +"')";
 				st.executeUpdate(query);
 				st.close();
+				return true;
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		}
-		
 	}
 	
 	private static List<Document> queryDoc(String acronym){
@@ -332,7 +372,7 @@ public class DBUtil {
 		}
 	}
 
-	public static  Category queryCategoryOfName (String name) {
+	public static Category queryCategoryOfName (String name) {
 		Category c = new Category(name);
 		try{
 			Statement st = con.createStatement();

@@ -40,3 +40,9 @@ Configuration:
         george@geek.com : 456
         
 
+
+## mysql configuration
+To use mysql as database, you can add a mysql docker container. To do so, run
+`docker run --name mysql --publish 6603:3306 -d -e MYSQL_ROOT_PASSWORD=123 -e MYSQL_DATABASE=ProjectFarm -v ~/dev/Project-Farm/data:/var/lib/mysql mysql`
+Notice in mac, the docker ip address is localhost while in linux the docker ip address is 172.17.0.1 (might vary accordingly)
+when you start the mysql container, you should dump the data/mysql.sql into the ProjectFarm database `mysql ProjectFarm < 'data/mysql.sql'`

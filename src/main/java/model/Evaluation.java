@@ -60,5 +60,4 @@ public class Evaluation implements Serializable {
 		}		
 		this.riskLevel = riskLevel;
 	}
-
 }

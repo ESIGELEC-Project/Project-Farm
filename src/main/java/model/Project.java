@@ -118,7 +118,7 @@ public class Project implements Serializable {
 	}
 
 	public void addEvaluation(Evaluation eval) {
-		DBUtil.addEvaluation(this.acronym, eval.getEvaluator().getEmail(), eval);
+		evaluations.add(eval);
 	}
 
 	public List<Evaluation> getEvaluations() {
@@ -127,11 +127,18 @@ public class Project implements Serializable {
 	
 	//here will update database
 	public void addDocument(Document doc) {
-		DBUtil.addDocPath(this.acronym, doc);
+		documents.add(doc);
 	}
 	
 	public List<Document> getDocuments() {
 		return documents;
+	}
+
+	@Override
+	public boolean equals(Object o){
+		if ( ((Project)o).getAcronym().equals(this.acronym) )
+			return true;
+		return false;
 	}
 
 }

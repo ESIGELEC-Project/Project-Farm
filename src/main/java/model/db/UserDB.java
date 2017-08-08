@@ -8,14 +8,10 @@ import model.User;
 import model.db.exception.DatabaseAccessError;
 
 public class UserDB {
-	
+
 	private static Map<String,User> users;
 	
 	static {
-		initializeUsersList();
-	}
-
-	private static void initializeUsersList() {
 		users = DBUtil.selectUserDB();
 	}
 	
@@ -52,7 +48,12 @@ public class UserDB {
 		return (Evaluator) u;		
 	}
 
-	public static boolean createUser(String username, String name, int password){
-		return DBUtil.createUser(username, name, password);
+	public static boolean createOwner(String username, String name, int password){
+		int id = users.size();
+		return DBUtil.createUser(id+1, username, name, password, "owner");
+	}
+	public static boolean createEvaluator(String username, String name, int password){
+		int id = users.size();
+		return DBUtil.createUser(id+1, username, name, password, "evaluator");
 	}
 }

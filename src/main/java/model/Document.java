@@ -29,9 +29,9 @@ public class Document implements Serializable {
 			throw new InvalidDataException("File " + documentPath + " does not exists");
 		}
 		
-		if(!file.isFile()) {
-			throw new InvalidDataException("Path " + documentPath + " does not point to a file");
-		}
+//		if(!file.isFile()) {
+//			throw new InvalidDataException("Path " + documentPath + " does not point to a file");
+//		}
 		
 		this.documentPath = documentPath;
 	}
@@ -44,4 +44,8 @@ public class Document implements Serializable {
 		this.added = added;
 	}
 
+	@Override
+	public String toString(){
+		return this.documentPath;
+	}
 }

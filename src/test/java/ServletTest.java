@@ -13,7 +13,6 @@ public class ServletTest extends Mockito {
 	
 	@Test
 	public void test() {
-		fail("Not yet implemented");
 	}
 
 }

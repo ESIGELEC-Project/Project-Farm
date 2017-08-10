@@ -3,6 +3,7 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.util.List;
 
+import junit.framework.Assert;
 import model.Category;
 import model.Document;
 import model.Evaluation;
@@ -15,9 +16,7 @@ import model.db.ProjectDB;
 import model.db.UserDB;
 import model.db.exception.DatabaseAccessError;
 import model.exception.InvalidDataException;
-
 import org.junit.Test;
-import org.junit.Assert;
 
 
 public class GeneralTest {
@@ -263,14 +262,14 @@ public class GeneralTest {
 			
 			
 		} catch (DatabaseAccessError | InvalidDataException | SQLException e) {
-			Assert.fail("eror creating project");
+			Assert.fail("error creating project");
 		}
 
 	}
 
 	@Test
 	public void testDatabase(){
-		Assert.assertEquals("success", UserDB.createUser("john@acme.com", "john", 123));
+		Assert.assertEquals(true, UserDB.createUser("john@acme.com", "john", 123));
 		
 	}
 

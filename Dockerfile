@@ -1,9 +1,13 @@
 
-FROM mysql
+FROM tomcat:latest
+MAINTAINER RunpingHuang
 
-ADD ./dump.sql /tmp
+ENV TOMCAT_HOME /usr/local/tomcat
 
-RUN \
-    mysql  -e 'CREATE DATABASE IF NOT EXISTS ProjectFarm' \
-    #echo 123 | mysql -u root -p ProjectFarm < /tmp/dump.sql
+COPY . /code/ProjectFarm
+WORKDIR /code/ProjectFarm
+
+COPY ./target/ProjectFarm.war $TOMCAT_HOME/webapps
+
+COPY ./tomcat-user.xml $TOMCAT_HOME/conf/
 

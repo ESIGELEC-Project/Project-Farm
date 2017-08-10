@@ -1,0 +1,24 @@
+version: '2'
+services:
+  tomcat:
+    build: .
+#   if you use build command to build you own image, you should always supply the image name here
+    image: projectfarm_tomcat
+    ports:
+      - 8080:8080
+    volumes:
+      - .:/code/ProjectFarm
+#    container_name: projectf
+
+  mysql:
+    image: mysql
+    ports:
+      - 6603:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=123
+      - MYSQL_DATABASE=ProjectFarm
+    volumes:
+      - ./data:/code/ProjectFarm/data
+#      this line can add the sql script inside ./data directory to the mysql container
+      - ./data:/docker-entrypoint-initdb.d
+#      remember to execute mysqldump to /docker-entrypoint-initdb.d every time you want to remove a container

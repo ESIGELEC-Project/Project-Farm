@@ -38,6 +38,32 @@ public class DBUtil {
 		initialize();
 	}
 
+	public static boolean checkConnection(){
+		try{
+			Class.forName(properties.getProperty("sql_driver")).newInstance();
+			String db_url = properties.getProperty("db_url");//the address should be changed to where the database resides
+			String dbuser = properties.getProperty("username");
+			String password = properties.getProperty("password");
+			con = DriverManager.getConnection(db_url, dbuser, password);
+			if(con != null){
+				return true;
+			}
+			return false;
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			return false;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+			return true;
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
 	public static boolean initialize(){
 		try {
 			Class.forName(properties.getProperty("sql_driver")).newInstance();
@@ -54,8 +80,9 @@ public class DBUtil {
                 System.out.println("Product name: " + dm.getDatabaseProductName());
                 System.out.println("Product version: " + dm.getDatabaseProductVersion());
                 System.out.println(dm.getURL());
+                return true;
 			}
-			return true;
+			return false;
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			return false;
@@ -78,10 +105,10 @@ public class DBUtil {
 			String query = "select * from user";
 			ResultSet result = st.executeQuery(query);
 			while(result.next()){
-				if(result.getString(4).equals("owner") )
-					users.put(result.getString(1), new Owner(result.getString(1),result.getString(2),result.getString(3)));
-				if(result.getString(4).equals("evaluator"))
-					users.put(result.getString(1), new Evaluator(result.getString(1),result.getString(2),result.getString(3)));
+				if(result.getString(5).equals("owner") )
+					users.put(result.getString(2), new Owner(result.getString(2),result.getString(3),result.getString(4)));
+				if(result.getString(5).equals("evaluator"))
+					users.put(result.getString(2), new Evaluator(result.getString(2),result.getString(3),result.getString(4)));
 			}
 			st.close();
 		} catch (SQLException e) {
@@ -91,17 +118,16 @@ public class DBUtil {
 		}
 	}
 
-	public static boolean createUser(String username, String name, int password){
+	public static boolean createUser(int id, String email, String name, int password, String userType){
 		Statement st;
 		try {
-			if (!checkUserCreatable(username)){
+			if (!checkUserCreatable(email)){
 				return false;
 			}
 			st = con.createStatement();
-			String sql = "insert into user(username,name,password)values('"+username+"','"+name+"','"+password+"')";
+			String sql = "INSERT INTO user (id,email,name,password, userType) values ('"+id+"','"+email+"','"+name+"','"+password+"','" + userType + "')";
 			st.executeUpdate(sql);
 			st.close();
-			con.commit();
 			con.close();
 			return true;
 		} catch (Exception e) {
@@ -110,18 +136,20 @@ public class DBUtil {
 		}
 	}
 
-	public static boolean checkUserCreatable(String username){
+
+
+	public static boolean checkUserCreatable(String email){
 		Statement st;
 		try{
 			st = con.createStatement();
-			String sql = "select " + username + " from user";
+			String sql = "select * from user where email='" + email +"'";
 			ResultSet result = st.executeQuery(sql);
-			if (!result.wasNull()){
+			if (!result.next()){
 				return true;
 			}
+			return false;
 		}catch(Exception e){
 			e.printStackTrace();
-		}finally {
 			return false;
 		}
 	}
@@ -167,6 +195,7 @@ public class DBUtil {
 				category_name = result.getString(8);
 				Statement st2 = con.createStatement();
 				ResultSet result2 = st2.executeQuery("select name, password from user where email='"+owner_email +"'");
+				result2.next();
 				owner = new Owner(owner_email, result2.getString(1), result2.getString(2));
 				Project p = new Project(acronym, description, funding_duration, budget, owner,  new Category(category_name));
 				List<Document> documents = queryDoc(acronym);
@@ -187,14 +216,12 @@ public class DBUtil {
 	
 	public static void addDocPath(String acronym, Document doc){
 		String path = doc.getDocumentPath();
-		String date = format.format(doc.getAdded());
 		try {
 			Statement st = con.createStatement();
-			String query = "insert into document values ('"+ acronym +"','"+ path +"','"+ date +"')";
+			String query = "UPDATE project SET document_path='" + path + "' WHERE acronym='" + acronym + "';";
 			st.executeUpdate(query);
 			st.close();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -226,14 +253,15 @@ public class DBUtil {
 				String description = p.getDescription();
 				int funding_duration = p.getFundingDuration() ;
 				double budget = p.getBudget();
+
 				String created_date = format.format(p.getCreated());
 				String owner_email = p.getOwner().getEmail();
 				String category_name = p.getCategory().getDescription();
-				
+				String document_path = p.getDocuments().toString();
 				Statement st = con.createStatement();
-				String query = "insert into project(acronym,description,funding_duration,budget,created_date,owner_email,category_name)"
+				String query = "insert into project(acronym,description,funding_duration,budget,created_date,owner_email,category_name, document_path)"
 						+ " values('"+ acronym +"','"+ description +"','"+ funding_duration +"','"+ budget +"','"+ created_date+
-						"','"+ owner_email+ "','"+ category_name +"')";
+						"','"+ owner_email+ "','"+ category_name +"','" + document_path + "')";
 				st.executeUpdate(query);
 				st.close();
 				return true;
@@ -249,13 +277,16 @@ public class DBUtil {
 		List<Document> docs = new ArrayList<Document>();
 		try {
 			Statement st = con.createStatement();
-			String query = "select * from document where project_acronym='"+ acronym +"'";
+			String query = "select created_date, document_path from project where acronym='"+ acronym +"'";
 			ResultSet re = st.executeQuery(query);
 			Document doc;
 			while(re.next()){
-				doc = new Document(re.getString(2));
-				doc.setAdded(format.parse(re.getString(3)));
-				docs.add(doc);
+				String doc_path = re.getString(2);
+				if (doc_path != null){
+					doc = new Document(re.getString(2));
+					doc.setAdded(format.parse(re.getString(1)));
+					docs.add(doc);
+				}
 			}
 			st.close();
 			return docs;
@@ -415,6 +446,7 @@ public class DBUtil {
 			category_name = result.getString(8);
 			Statement st2 = con.createStatement();
 			ResultSet result2 = st2.executeQuery("select name, password from user where email='"+owner_email +"'");
+			result2.next();
 			owner = new Owner(owner_email, result2.getString(1), result2.getString(2));
 			p = new Project(acronym, description, funding_duration, budget, owner,  new Category(category_name));
 			List<Document> documents = queryDoc(acronym);

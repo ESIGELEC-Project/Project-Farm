@@ -1,12 +1,10 @@
-import org.junit.Assert.*;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import controller.LoginServlet;
-
-import static junit.framework.TestCase.fail;
 
 public class ServletTest extends Mockito {
 	

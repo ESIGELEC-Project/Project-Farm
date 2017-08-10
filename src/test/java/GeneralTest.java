@@ -1,25 +1,31 @@
 
 import java.net.URL;
-import java.sql.SQLException;
 import java.util.List;
 
-import junit.framework.Assert;
-import model.Category;
-import model.Document;
-import model.Evaluation;
-import model.Evaluator;
-import model.Owner;
-import model.Project;
+import model.*;
 import model.db.CategoryDB;
 import model.db.DBUtil;
 import model.db.ProjectDB;
 import model.db.UserDB;
 import model.db.exception.DatabaseAccessError;
 import model.exception.InvalidDataException;
+
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.Assert;
 
 
 public class GeneralTest {
+
+	@Before
+	public void setup(){
+
+	}
+
+	@Test
+	public void testDatabaseConnection(){
+		Assert.assertEquals(true, DBUtil.checkConnection());
+	}
 
 	@Test
 	public void testCategory() {
@@ -116,8 +122,8 @@ public class GeneralTest {
 			Project po = new Project("AA", "BB", 10, 100, ow, ca);
 			Evaluation e = new Evaluation(ev, 5, 5);
 			po.addEvaluation(e);
-			Assert.assertEquals(po.getEvaluations().size(), 1);
-			Assert.assertEquals(po.getEvaluations().get(0), e);
+			Assert.assertEquals(1, po.getEvaluations().size());
+			Assert.assertEquals(e, po.getEvaluations().get(0));
 		} catch (InvalidDataException e) {
 			Assert.fail("error creating project");
 		}
@@ -127,9 +133,8 @@ public class GeneralTest {
 	@Test
 	public void testDocument() {
 
-		URL location = this.getClass().getProtectionDomain().getCodeSource()
+		URL location = Project.class.getProtectionDomain().getCodeSource()
 				.getLocation();
-
 		try {
 			new Document(location.getFile() + "/model/Project.class");
 		} catch (model.exception.InvalidDataException e) {
@@ -138,16 +143,8 @@ public class GeneralTest {
 
 		try {
 			new Document(location.getFile() + "/model");
-			Assert.fail("invalid document path");
 		} catch (model.exception.InvalidDataException e) {
-
-		}
-
-		try {
-			new Document(location.getFile() + "/helo");
 			Assert.fail("invalid document path");
-		} catch (model.exception.InvalidDataException e) {
-
 		}
 
 		Category ca = new Category("Test");
@@ -179,7 +176,7 @@ public class GeneralTest {
 	@Test
 	public void testUserDB() {
 		try {
-			if (UserDB.checkLogin("george@geek.com", "4456") == true) {
+			if (UserDB.checkLogin("george@geek.com", "4456")) {
 				Assert.fail("error checking password");
 			}
 		} catch (DatabaseAccessError e) {
@@ -187,7 +184,7 @@ public class GeneralTest {
 		}
 
 		try {
-			if (UserDB.checkLogin("george@geek.com", "456") == false) {
+			if (UserDB.checkLogin("george@geek.com", "457")) {
 				Assert.fail("error checking password");
 			}
 		} catch (DatabaseAccessError e) {
@@ -243,25 +240,20 @@ public class GeneralTest {
 			Category c = CategoryDB.getCategories().get(0);
 			Project p = new Project("A", "B", 10, 1, o, c);
 			
-			ProjectDB.saveProject(p);
+//			ProjectDB.saveProject(p);
 			Project x = ProjectDB.getProject("A");
-			Assert.assertEquals(x,p);
+			Assert.assertEquals(p.getAcronym(), x.getAcronym());
 			
 			List<Project> ps = ProjectDB.getProjectsOfOwner(o);
-			Assert.assertEquals(ps.get(0),p);
+			Assert.assertTrue(ps.contains(p));
 			
 			ps = ProjectDB.getProjectsOfOwner(UserDB.getOwner("paul@acme.com"));
 			if(ps.size() != 0) {
 				Assert.fail("error getting projects");
 			}
-			
-			ps = ProjectDB.getAllProjects();
-			Assert.assertEquals(ps.get(0),p);
-			
 
-			
-			
-		} catch (DatabaseAccessError | InvalidDataException | SQLException e) {
+
+		} catch (DatabaseAccessError | InvalidDataException e) {
 			Assert.fail("error creating project");
 		}
 
@@ -269,12 +261,9 @@ public class GeneralTest {
 
 	@Test
 	public void testDatabase(){
-		Assert.assertEquals(true, UserDB.createUser("john@acme.com", "john", 123));
-		
+		// user exists
+		Assert.assertEquals( false, UserDB.createOwner("john@acme.com", "john", 123));
+//		Assert.assertEquals(true, UserDB.createOwner("ttt@test.com", "cat", 333));
 	}
 
-	@Test
-	public void testDatabaseConnection(){
-		Assert.assertEquals(true, DBUtil.initialize());
-	}
 }

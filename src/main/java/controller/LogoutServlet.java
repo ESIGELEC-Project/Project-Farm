@@ -46,14 +46,13 @@ public class LogoutServlet extends HttpServlet {
 		HttpSession session = request.getSession();
 		PrintWriter out = response.getWriter();
 		if(session.isNew()){
-			out.println("you have already loged out!");//should change
+			out.println("you have already logged out!");//should change
 			session.invalidate();
 		}else{
 			session.invalidate();
 			RequestDispatcher dis = request.getRequestDispatcher("/index.jsp");
 			dis.forward(request, response);
 		}
-		
 	}
 
 }
